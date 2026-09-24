@@ -25,3 +25,10 @@ function exportPicks(){const rows=[["상품","출처","가격","MOQ","상태","�
 function saveMemo(id,val){localStorage.setItem("foxMemo:"+id,val)}
 function getMemo(id){return localStorage.getItem("foxMemo:"+id)||""}
 function productCardV2(p){const dup=duplicateGroups().find(g=>g.items.some(x=>x.id===p.id));return `<article class="card product">${p.image?`<img class="pimg" src="${p.image}" alt="">`:""}<span class="tag">${p.source||"소싱 후보"}</span>${dup?`<span class="dupe">중복 후보 ${dup.items.length}</span>`:""}<h3>${p.name}</h3><p><b>가격</b> ${p.price||"확인 중"} · <b>MOQ</b> ${p.moq||"확인 중"}</p><p>${p.reason||""}</p>${p.risk?`<p class="risk">⚠ ${p.risk}</p>`:""}<textarea placeholder="사입 메모" oninput="saveMemo('${p.id}',this.value)">${getMemo(p.id)}</textarea>${p.url?`<p><a href="${p.url}" target="_blank" rel="noopener">원문 상품 보기 ↗</a></p>`:""}</article>`}
+
+
+// v0.5 실제 후보 화면 연결
+function showSourcedProducts(query=""){const q=norm(query);const list=productStore.filter(p=>!q||norm([p.name,p.source,p.reason,p.price].join(" ")).includes(q));content.innerHTML=list.length?list.map(productCardV2).join(""):'<div class="note"><b>검색 결과가 없습니다.</b></div>'}
+if(typeof exportBtn!=="undefined")exportBtn.onclick=exportPicks;
+if(typeof searchBox!=="undefined")searchBox.addEventListener("input",e=>showSourcedProducts(e.target.value));
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener("click",()=>{if(b.dataset.tab==="china")setTimeout(()=>showSourcedProducts(searchBox?.value||""),0)}));
