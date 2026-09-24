@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FOX · 카메라로 옷 찾기</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head>
+<body>
+<header><div class="brand"><b>F.</b><div>LUMIÈRE FOX<small>카메라로 옷 찾기 · 1.1.0</small></div></div><span class="pill">내가 동의할 때만 전환</span></header>
+<main>
+ <section id="pair" hidden class="panel"><h1>메인 데스크탑에 연결</h1><p>카메라 도우미 화면에 보이는 연결번호를 입력하세요.</p><form id="pairForm"><input id="pin" inputmode="numeric" maxlength="8" placeholder="연결번호 8자리" aria-label="연결번호"><button>연결하기</button></form></section>
+ <div id="studio" hidden>
+ <section class="intro"><div><p class="eyebrow">LIVE CAMERA ASSIST</p><h1>옷을 보여주세요.<br>바꾸는 건, 내가 결정해요.</h1><p>잠깐 스친 옷은 기다리고, 확인한 착용샷만 방송에 보냅니다.</p></div><div class="actions"><button id="prepareTop" class="light">상품 준비</button><button id="start">자동 찾기 시작</button><button id="pause" class="light">잠깐 멈추기</button></div></section>
+ <p id="updateStatus" class="hint" role="status"></p>
+ <p id="operatorHint" class="hint"></p>
+ <div id="statusBox" class="status" role="status"><span id="runLamp">●</span><span id="status">연결 확인 중…</span><span id="count"></span></div>
+ <p id="error" class="error" role="alert" hidden></p>
+ <section id="proposal" class="proposal panel" hidden aria-labelledby="proposalTitle">
+   <div class="sectionHead"><div><p class="eyebrow">착용샷 확인</p><h2 id="proposalTitle">이 옷에 맞는 사진인가요?</h2><p>맞는 사진 아래의 버튼을 눌러 주세요. 닫아도 현재 사진은 그대로예요.</p></div><button id="dismiss" class="light">그대로 두기</button></div>
+   <div class="comparison"><div class="seen"><p>카메라에서 본 옷</p><img id="seen" alt="후보를 찾았을 때 카메라에 보인 옷"><p id="expiry"></p></div><div id="candidates" class="candidates"></div></div>
+ </section>
+ <section id="waiting" class="panel waiting"><div><span class="eyebrow">지금 방송 중인 사진</span><h2 id="currentName">방송 도우미 연결 대기</h2><p>후보를 찾거나 창을 새로고침해도 자동으로 바뀌지 않아요.</p><button id="undo" class="light" disabled>방금 전 착용샷으로 돌리기</button></div><img id="currentPhoto" alt="현재 방송 도우미에서 선택된 착용샷" hidden></section>
+ <details id="setup" class="panel"><summary>처음 한 번 · 카메라 연결과 인식 준비</summary>
+  <p>메인 데스크탑에서 설정하세요. OBS 노트북에서는 <b>도구 → WebSocket 서버 설정 → 서버 활성화</b>를 켜고, 인증을 켠 채 연결 정보를 확인합니다.</p>
+  <form id="configForm" class="configGrid">
+   <label>OBS 노트북 주소<input id="host" placeholder="예: 192.168.219.120" required></label>
+   <label>포트<input id="port" type="number" min="1024" max="65535" value="4455" required></label>
+   <label>OBS 비밀번호<input id="password" type="password" autocomplete="off" placeholder="OBS에 표시된 비밀번호"></label>
+   <label>카메라 소스 이름<input id="source" list="sources" value="DroidCamOBS" required><datalist id="sources"></datalist></label>
+   <div class="formActions"><button>설정 저장</button><button type="button" id="check" class="light">카메라 연결 확인</button></div>
+  </form>
+  <label id="sourcePickerRow" hidden>OBS에서 가져온 실제 소스 목록<select id="sourcePicker" aria-label="OBS에서 가져온 실제 소스 목록"></select></label>
+  <p id="cameraResult" role="status" hidden></p>
+  <p class="hint">비밀번호는 이 프로그램을 켜 둔 동안만 기억합니다. 다시 실행하면 입력해 주세요.</p>
+  <div class="cameraArea"><div><h3>옷을 볼 영역</h3><p>옷이 옆으로 누워 있으면 회전 버튼으로 똑바로 맞춰 주세요.</p><p>미리보기에서 옷이 놓이는 부분을 드래그하세요. 계좌 배너와 착용샷 화면이 들어오지 않게 잡아 주세요.</p><button id="saveCrop" class="light">이 영역으로 설정 저장</button><p id="cropLabel"></p></div><div><div class="rotationActions"><button type="button" id="rotateLeft" class="light" disabled>↶ 왼쪽 90°</button><button type="button" id="rotateRight" class="light" disabled>↷ 오른쪽 90°</button></div><p id="rotationLabel" class="hint" role="status">0° · 방향은 자동 저장돼요</p><canvas id="preview" width="640" height="480" aria-label="옷을 볼 영역 선택"></canvas><button id="previewRefresh" class="light">미리보기 다시 보기</button></div></div>
+  <div class="prepare"><div><h3>무료 인식 도구·상품 준비</h3><p>처음에는 약 89 MB 인식 모델과 상품 사진을 준비합니다. 이후 카메라 사진은 외부로 보내지 않고 이 컴퓨터에서 비교합니다.</p></div><button id="prepare">인식 도구·상품 준비</button></div>
+  <p class="hint">인식은 후보를 고르는 보조 기능입니다. 비슷한 색·무늬의 옷이나 여러 벌이 함께 보이면 틀릴 수 있어요. 옷 한 벌을 영역 안에 정면으로 보여 주세요.</p>
+ </details>
+ <details class="panel"><summary>잘 못 찾는 옷 · 착용샷과 연결해 기억시키기</summary><p>카메라에 옷 한 벌을 보여주고 아래에서 맞는 착용샷을 고르세요. 방송 사진은 바뀌지 않습니다. 기억한 뒤에는 이 화면 위의 ‘상품 준비’ → ‘자동 찾기 시작’을 눌러 주세요.</p><div class="sectionHead"><input id="search" placeholder="이름·상품번호로 찾기" aria-label="기억시킬 상품 찾기"><button id="refresh" class="light">상품 목록 다시 읽기</button></div><div id="catalog" class="catalog"></div></details>
+ <details class="panel"><summary>OBS 노트북·휴대폰에서 동의 버튼 누르기</summary><p>같은 공유기에 연결한 기기에서 아래 주소를 열어주세요.</p><div id="addresses"></div><p id="pairPin"></p><p>이 화면은 진행자용입니다. OBS에는 기존 <b>화보 전용 화면 주소</b>를 계속 사용하세요. 오른쪽 착용샷의 위치와 크기는 그대로 유지됩니다.</p></details>
+ </div>
+ <p id="notice" role="status"></p>
+</main>
+<dialog id="rememberDialog"><form method="dialog"><button class="close light" aria-label="닫기">닫기</button></form><h2>지금 카메라의 옷이<br>이 사진의 옷인가요?</h2><img id="rememberPhoto" alt="기억시킬 착용샷"><p id="rememberName"></p><p>카메라에 해당 옷만 보여준 상태에서 눌러 주세요.</p><button id="rememberConfirm">맞아요 · 이 옷 기억하기</button></dialog>
+<footer>LUMIÈRE FOX · 카메라 도우미 1.1.0 · 방송 전 연결·인식 확인용</footer>
+</body></html>
