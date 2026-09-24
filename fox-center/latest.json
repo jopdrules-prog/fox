@@ -1,12 +1,1 @@
-{
-  "payload": {
-    "app": "FOX Center",
-    "protocol": 1,
-    "version": "0.3.1",
-    "notes": "설치 재시도·업데이트 복구 개선, 오프라인 패치 탐색, 방송 날짜 고정과 수정 이력 버튼 보완, 베스트 이너 착용 지시 강화",
-    "url": "https://raw.githubusercontent.com/jopdrules-prog/fox/main/fox-center/releases/0.3.1/FOX_Center_0.3.1.foxpatch",
-    "size": 61532,
-    "sha256": "e5de96ccfbd46aa5107c447040ef24918ec3bb13c80fd5a109839f26f1970801"
-  },
-  "signature": "KxAXQodq3oAkBZdBOAnGULhXarAC9jOj6KlcMg0OZ+jolWXb7vBQENrlWEapETg+SbMddAUjCRItHmLrxjMVgf0zdzJkeCBDDq0GTUjMZlrLifFv3pWrR/ZLVr6eBEhVOFAZg4kSd6jPAD6GozYvVb6Q6Ou6aYdwIKxXp7PKau8AZjzeS3XXGGr5QBw62QrI1LDnq3L9cNoUZ/2yBb0B2OmC9og4IudCajtDvTWc6hXv8973w7fm0cnhImqD4zXliMyt13lnTXUvK36vDRJc5orjeEtLS/0lmHt/mBs863RHbbK0QuVUik+sd53aoduEeFvAj+IpdKufIglmupbMPzX0V+I5N/tICyLzuhYZFnDSYVL8gsaf7H3o7qtZzAd9Oa5LzKEj0F/zBoTy4Gb6KMT/2EsVdEfa3tpjfjjiqJio9bDdXLO4HtYOyfCLLkmmZXrFcvuQqAhfZACplpwbohtlkRpYvTokJLkaDuZEycH2ki43uSb+HEkBURbFKx3U"
-}
+{"payload": {"app": "FOX Center", "protocol": 1, "version": "0.3.2", "notes": "요청한 영문 프롬프트 적용 · 실제 40대 중반(45세 전후) 서유럽 모델 · 명품 패션 매거진 화보 강화 · 새 생성과 사진 수정에 동일 적용", "url": "https://raw.githubusercontent.com/jopdrules-prog/fox/main/fox-center/releases/0.3.2/FOX_Center_0.3.2.foxpatch", "size": 62398, "sha256": "bbc0e9bff6d85d30cd0831fbcd3a6d7dae81808b5b9cf992f9dc33ace46f151b"}, "signature": "XmyxRblwL8Q85L9+pLDrdhHcqwyT4WmKtoOpVc9Zv5xS9SUNovl2k7R6BztjNoe6IABJ5zG8FnDkKCMw1GBBkB5amxSqC79Nt6QZ17qsdKak3zWKJb8Ke3xa1hWvui/Y8aQEegwsEKvjN9WS4Ym673zWSchUQyRuHs/cxNvfJefLjBsSZttaOfeV6UzA2i6VYubTGZD4F3EV3YpffpVN8BHyiywqqTIKAQ8o4Rs7R5Jth1/WBKYC+//Oq7czLvXlszuYPslJXLZZik79w/tYEOxtJV2YG9qHCcLWae1Y7cObZWdfnmZFqdJXKsF6HjNBNi/bCUj45xid2h50JlaMxo0J02sG931HUQMi6nmqPWJDHJRcUgEtobIOvUL4/SYOjyrU1rilyycAarVvRbTtJR0e78hUtqfBIZya+9mke7TcMQ+lk3qFOecPVtgTHfA300kPT9b54qCz0vwOlkE1qT/dpVZeooPU14c5QPZMGJObqrTH3r6LxJoabltX8HUO"}
