@@ -16,3 +16,12 @@ const verifiedProducts=[
 {id:"vvic-a10151",name:"니트 카디건 + 원피스 2피스",source:"VVIC · 광저우",price:"¥73",moq:"페이지 수량 선택 기준 확인",url:"https://global.vvic.com/products/6a86d98d74b9ba00066528cd",reason:"한 세트로 코디가 완성돼 라이브 설명과 객단가 구성에 활용 가능한 후보.",risk:"M/L만 확인되어 사이즈 범위가 좁을 수 있음"}
 ];
 if(!localStorage.getItem("foxVerifiedSeed20260925")){verifiedProducts.forEach(p=>{if(!productStore.some(x=>x.id===p.id))productStore.push({...p,status:""})});localStorage.setItem("foxProducts",JSON.stringify(productStore));localStorage.setItem("foxVerifiedSeed20260925","1")}
+
+
+// v0.4 후보 검색/중복 경고/메모/내보내기
+function norm(s){return (s||"").toLowerCase().replace(/\s+/g,"")}
+function duplicateGroups(){const words=["니트","카디건","재킷","베스트","블라우스","셔츠","팬츠","원피스","스커트"];return words.map(w=>({w,items:productStore.filter(p=>norm(p.name).includes(w))})).filter(g=>g.items.length>1)}
+function exportPicks(){const rows=[["상품","출처","가격","MOQ","상태","링크"],...productStore.map(p=>[p.name,p.source,p.price,p.moq,p.status||"",p.url])];const csv=rows.map(r=>r.map(v=>'"'+String(v||"").replaceAll('"','""')+'"').join(",")).join("\n");const b=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="FOX_사입후보.csv";a.click();URL.revokeObjectURL(a.href)}
+function saveMemo(id,val){localStorage.setItem("foxMemo:"+id,val)}
+function getMemo(id){return localStorage.getItem("foxMemo:"+id)||""}
+function productCardV2(p){const dup=duplicateGroups().find(g=>g.items.some(x=>x.id===p.id));return `<article class="card product">${p.image?`<img class="pimg" src="${p.image}" alt="">`:""}<span class="tag">${p.source||"소싱 후보"}</span>${dup?`<span class="dupe">중복 후보 ${dup.items.length}</span>`:""}<h3>${p.name}</h3><p><b>가격</b> ${p.price||"확인 중"} · <b>MOQ</b> ${p.moq||"확인 중"}</p><p>${p.reason||""}</p>${p.risk?`<p class="risk">⚠ ${p.risk}</p>`:""}<textarea placeholder="사입 메모" oninput="saveMemo('${p.id}',this.value)">${getMemo(p.id)}</textarea>${p.url?`<p><a href="${p.url}" target="_blank" rel="noopener">원문 상품 보기 ↗</a></p>`:""}</article>`}
