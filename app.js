@@ -5,3 +5,14 @@ const productStore=JSON.parse(localStorage.getItem("foxProducts")||"[]");
 function addProduct(p){productStore.push({id:"p"+Date.now(),name:p.name||"상품 후보",source:p.source||"",price:p.price||"",moq:p.moq||"",url:p.url||"",image:p.image||"",reason:p.reason||"",risk:p.risk||"",status:""});localStorage.setItem("foxProducts",JSON.stringify(productStore))}
 function productCard(p){return `<article class="card product">${p.image?`<img class="pimg" src="${p.image}" alt="">`:""}<div><span class="tag">${p.source||"소싱 후보"}</span><h3>${p.name}</h3><p><b>가격</b> ${p.price||"확인 중"} · <b>MOQ</b> ${p.moq||"확인 중"}</p><p>${p.reason||"FOX 적합성 분석 예정"}</p>${p.risk?`<p class="risk">⚠ ${p.risk}</p>`:""}${p.url?`<p><a href="${p.url}" target="_blank" rel="noopener">원문 상품 보기 ↗</a></p>`:""}</div></article>`}
 function renderProducts(){return productStore.length?productStore.map(productCard).join(""):'<div class="note"><b>실상품 후보 수집 준비 완료</b><p>확인된 상품만 사진·가격·MOQ·원문 링크와 함께 여기에 들어옵니다. 확인되지 않은 가격이나 판매량은 만들지 않습니다.</p></div>'}
+
+
+const verifiedProducts=[
+{id:"vvic-a101406",name:"V넥 루즈핏 스트라이프 니트 카디건",source:"VVIC · 광저우",price:"¥52",moq:"페이지 수량 선택 기준 확인",url:"https://global.vvic.com/products/6a8af1c1f99de7000739ca68",reason:"블랙/그레이, 루즈핏이라 FOX 고객층에 비교적 적용하기 쉬운 후보.",risk:"폴리에스터 100%, 프리사이즈라 실측 확인 필요"},
+{id:"vvic-x1007",name:"빅사이즈 복고 니트 카디건",source:"VVIC · 광저우",price:"¥26",moq:"페이지 수량 선택 기준 확인",url:"https://global.vvic.com/products/6967422a90a91a000765b855",reason:"빅사이즈 표기와 브라운·블랙·그레이 계열로 FOX 체형 커버 후보.",risk:"프리사이즈 표기와 빅사이즈 표현이 함께 있어 실제 실측 필수"},
+{id:"vvic-a10191",name:"컬러 네프사 니트 카디건",source:"VVIC · 광저우",price:"¥42",moq:"페이지 수량 선택 기준 확인",url:"https://global.vvic.com/products/6a86d96774b9ba000665286c",reason:"오트밀·올리브·브라운 등 가을 방송에서 색상 선택지가 좋은 후보.",risk:"슬림핏 표기라 FOX 고객층 체형 적합성 샘플 확인 필요"},
+{id:"vvic-64535",name:"울 100% 라운드 카디건",source:"VVIC · 광저우",price:"¥45",moq:"페이지 수량 선택 기준 확인",url:"https://global.vvic.com/products/6a66009174b9ba00067e5a7e",reason:"S~2XL 사이즈와 그레이·카키 등 성숙한 컬러 구성이 강점.",risk:"페이지의 울100% 소재 표기는 샘플/라벨 재확인 권장"},
+{id:"vvic-a10014",name:"루즈 드롭숄더 스트라이프 니트",source:"VVIC · 광저우",price:"¥39",moq:"페이지 수량 선택 기준 확인",url:"https://global.vvic.com/products/6a85bdb7a917210006ae877d",reason:"루즈 실루엣과 브라운·블랙 계열로 데일리 판매 후보.",risk:"프리사이즈이므로 가슴단면·총장 확인 필요"},
+{id:"vvic-a10151",name:"니트 카디건 + 원피스 2피스",source:"VVIC · 광저우",price:"¥73",moq:"페이지 수량 선택 기준 확인",url:"https://global.vvic.com/products/6a86d98d74b9ba00066528cd",reason:"한 세트로 코디가 완성돼 라이브 설명과 객단가 구성에 활용 가능한 후보.",risk:"M/L만 확인되어 사이즈 범위가 좁을 수 있음"}
+];
+if(!localStorage.getItem("foxVerifiedSeed20260925")){verifiedProducts.forEach(p=>{if(!productStore.some(x=>x.id===p.id))productStore.push({...p,status:""})});localStorage.setItem("foxProducts",JSON.stringify(productStore));localStorage.setItem("foxVerifiedSeed20260925","1")}
