@@ -6,3 +6,5 @@
 .costs{display:flex;gap:7px;margin:9px 0}.costs input{width:50%;min-width:0;border:1px solid #ddd;border-radius:10px;padding:10px;font-size:14px}
 
 .margin{background:#e9f6ec;border-radius:10px;padding:10px;margin:8px 0;font-size:14px}.margin b{margin-right:6px}
+
+.budget{margin:0 14px 12px;background:#171717;color:#fff;padding:14px;border-radius:16px}.budget input{width:100%;border:0;border-radius:10px;padding:11px;font-size:16px}.budget #budgetSummary{padding-top:10px}.budget #budgetSummary b,.budget #budgetSummary span{display:block}.budget #budgetSummary span{font-size:13px;color:#bbb;margin-top:3px}.qty{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;margin:8px 0}.qty input{width:80px;border:1px solid #ddd;border-radius:9px;padding:8px}
