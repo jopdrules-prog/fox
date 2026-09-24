@@ -1,0 +1,12 @@
+{
+  "payload": {
+    "app": "FOX Center",
+    "protocol": 1,
+    "version": "0.3.1",
+    "notes": "설치 재시도·업데이트 복구 개선, 오프라인 패치 탐색, 방송 날짜 고정과 수정 이력 버튼 보완, 베스트 이너 착용 지시 강화",
+    "url": "https://raw.githubusercontent.com/jopdrules-prog/fox/main/fox-center/releases/0.3.1/FOX_Center_0.3.1.foxpatch",
+    "size": 61532,
+    "sha256": "e5de96ccfbd46aa5107c447040ef24918ec3bb13c80fd5a109839f26f1970801"
+  },
+  "signature": "KxAXQodq3oAkBZdBOAnGULhXarAC9jOj6KlcMg0OZ+jolWXb7vBQENrlWEapETg+SbMddAUjCRItHmLrxjMVgf0zdzJkeCBDDq0GTUjMZlrLifFv3pWrR/ZLVr6eBEhVOFAZg4kSd6jPAD6GozYvVb6Q6Ou6aYdwIKxXp7PKau8AZjzeS3XXGGr5QBw62QrI1LDnq3L9cNoUZ/2yBb0B2OmC9og4IudCajtDvTWc6hXv8973w7fm0cnhImqD4zXliMyt13lnTXUvK36vDRJc5orjeEtLS/0lmHt/mBs863RHbbK0QuVUik+sd53aoduEeFvAj+IpdKufIglmupbMPzX0V+I5N/tICyLzuhYZFnDSYVL8gsaf7H3o7qtZzAd9Oa5LzKEj0F/zBoTy4Gb6KMT/2EsVdEfa3tpjfjjiqJio9bDdXLO4HtYOyfCLLkmmZXrFcvuQqAhfZACplpwbohtlkRpYvTokJLkaDuZEycH2ki43uSb+HEkBURbFKx3U"
+}
