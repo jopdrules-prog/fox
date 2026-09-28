@@ -1,1 +1,21 @@
-{"name":"FOX 프로듀서","short_name":"FOX PD","start_url":"./","display":"standalone","background_color":"#f5f5f3","theme_color":"#111111","icons":[]}
+{
+  "name": "FOX Producer",
+  "short_name": "FOX PD",
+  "description": "FOX 4050 여성의류 사입 전담 프로듀서",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f5f3",
+  "theme_color": "#111111",
+  "orientation": "portrait-primary",
+  "lang": "ko-KR",
+  "icons": [
+    {
+      "src": "fox-producer-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
