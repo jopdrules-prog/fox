@@ -72,3 +72,53 @@ function restoreBackup(file){const r=new FileReader();r.onload=()=>{try{const d=
 function sourcingSummary(){const b=productStore.filter(p=>p.status==="buy"),hold=productStore.filter(p=>p.status==="hold"),no=productStore.filter(p=>p.status==="no");const cost=b.reduce((a,p)=>a+n(p.krwCost)*(p.qty||1),0),sales=b.reduce((a,p)=>a+n(p.sellPrice)*(p.qty||1),0);return `<div class="summary"><b>FOX 사입 요약</b><div><span>사입 ${b.length}</span><span>보류 ${hold.length}</span><span>제외 ${no.length}</span></div><p>예상 원가 ${cost.toLocaleString()}원 · 예상 판매 ${sales.toLocaleString()}원</p></div>`}
 function showMySourcingV9(){const list=selectedProducts();content.innerHTML=sourcingSummary()+budgetBox()+`<div class="backupbar"><button onclick="downloadBackup()">백업 저장</button><label>백업 복원<input type="file" accept=".json,application/json" hidden onchange="restoreBackup(this.files[0])"></label></div>`+(list.length?list.map(p=>productCardV4(p).replace('<textarea',qtyBox(p)+'<textarea')).join(""):'<div class="note"><b>아직 선택한 실상품이 없습니다.</b></div>');updateBudget();productCounts()}
 document.querySelectorAll('nav button').forEach(b=>b.addEventListener("click",()=>{if(b.dataset.tab==="mine")setTimeout(showMySourcingV9,45)}));
+
+
+// v1.1 휴대폰 현장 상품 직접 추가
+let pendingPhoto="";
+const addPanel=document.getElementById("addPanel"), addBtn=document.getElementById("addBtn");
+function openAdd(){addPanel.hidden=false;addPanel.scrollIntoView({behavior:"smooth",block:"start"})}
+function closeAdd(){addPanel.hidden=true}
+if(addBtn)addBtn.addEventListener("click",openAdd);
+document.getElementById("cancelAdd")?.addEventListener("click",closeAdd);
+document.getElementById("photoInput")?.addEventListener("change",e=>{
+  const f=e.target.files?.[0]; if(!f)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const im=new Image();
+    im.onload=()=>{
+      const max=720, scale=Math.min(1,max/Math.max(im.width,im.height));
+      const c=document.createElement("canvas"); c.width=Math.round(im.width*scale); c.height=Math.round(im.height*scale);
+      c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+      pendingPhoto=c.toDataURL("image/jpeg",0.68);
+      const pv=document.getElementById("photoPreview"); pv.src=pendingPhoto; pv.hidden=false;
+    };
+    im.src=reader.result;
+  };
+  reader.readAsDataURL(f);
+});
+function clearAddForm(){
+  ["newName","newColor","newShop","newCost","newSell","newSize","newMemo"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("newQty").value="1"; document.getElementById("photoInput").value="";
+  const pv=document.getElementById("photoPreview");pv.hidden=true;pv.removeAttribute("src");pendingPhoto="";
+}
+document.getElementById("saveAdd")?.addEventListener("click",()=>{
+  const name=document.getElementById("newName").value.trim();
+  if(!name){alert("상품명을 입력해 주세요.");return}
+  const p={id:"local-"+Date.now(),name,source:document.getElementById("newSource").value,
+    color:document.getElementById("newColor").value.trim(),shop:document.getElementById("newShop").value.trim(),
+    krwCost:document.getElementById("newCost").value.trim(),sellPrice:document.getElementById("newSell").value.trim(),
+    qty:Math.max(1,parseInt(document.getElementById("newQty").value)||1),size:document.getElementById("newSize").value.trim(),
+    reason:document.getElementById("newMemo").value.trim(),image:pendingPhoto,status:"hold",price:"",moq:""};
+  try{productStore.unshift(p);localStorage.setItem("foxProducts",JSON.stringify(productStore))}
+  catch(e){productStore.shift();alert("사진 저장 공간이 부족합니다. 사진을 줄여 다시 시도해 주세요.");return}
+  clearAddForm();closeAdd();productCounts();showSourcedProductsV4("");
+  alert("상품을 저장했어요. 우선 '보류'로 등록했습니다.");
+});
+const oldCardV4=productCardV4;
+productCardV4=function(p){
+  let out=oldCardV4(p);
+  const extras=[p.color&&("색상 "+p.color),p.shop&&("사입처 "+p.shop),p.size&&("사이즈 "+p.size)].filter(Boolean).join(" · ");
+  if(extras)out=out.replace("<h3>"+p.name+"</h3>","<h3>"+p.name+"</h3><p class=\"meta\">"+extras+"</p>");
+  return out;
+};
