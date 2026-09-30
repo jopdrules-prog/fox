@@ -22,7 +22,12 @@ jobs:
           gradle-version: '8.7'
       - run: gradle assembleDebug
         working-directory: android
+      - name: Prepare FOX Producer APK
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk FOX-Producer.apk
+          ls -lh FOX-Producer.apk
+          unzip -t FOX-Producer.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: FOX-Producer-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: FOX-Producer-Android
+          path: FOX-Producer.apk
