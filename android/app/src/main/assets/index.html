@@ -1,4 +1,4 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#111"><link rel="stylesheet" href="app.css"><title>FOX Producer Android 1.1</title></head><body><header><div><b>FOX PRODUCER</b><small>여성의류 사입 전담 프로듀서</small></div></header><main><section class="hero"><h1>이번 주 사입판</h1><p>40~50대 FOX 고객 기준 · 중복은 줄이고 적중률은 높이기</p><div class="stats"><span>목표 <b>30</b></span><span>사입 <b id="buyN">0</b></span><span>보류 <b id="holdN">0</b></span><span>제외 <b id="noN">0</b></span></div></section><nav><button data-tab="week" class="on">🔥 이번 주</button><button data-tab="china">🇨🇳 중국</button><button data-tab="korea">🇰🇷 한국</button><button data-tab="fox">🦊 FOX 픽</button><button data-tab="mine">📦 내 사입</button></nav><section class="tools"><input id="searchBox" placeholder="상품 검색"><button id="addBtn" class="addbtn">+ 상품 추가</button><button id="exportBtn">사입표 저장</button></section>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#111"><link rel="stylesheet" href="app.css"><title>FOX Producer Android</title></head><body><header><div><b>FOX PRODUCER</b><small>여성의류 사입 전담 프로듀서</small><small id="appVersion"></small></div></header><main><section class="hero"><h1>이번 주 사입판</h1><p>40~50대 FOX 고객 기준 · 중복은 줄이고 적중률은 높이기</p><div class="stats"><span>목표 <b>30</b></span><span>사입 <b id="buyN">0</b></span><span>보류 <b id="holdN">0</b></span><span>제외 <b id="noN">0</b></span></div></section><nav><button data-tab="week" class="on">🔥 이번 주</button><button data-tab="china">🇨🇳 중국</button><button data-tab="korea">🇰🇷 한국</button><button data-tab="fox">🦊 FOX 픽</button><button data-tab="mine">📦 내 사입</button></nav><section class="tools"><input id="searchBox" placeholder="상품 검색"><button id="addBtn" class="addbtn">+ 상품 추가</button><button id="exportBtn">사입표 저장</button></section>
 <section id="addPanel" class="addpanel" hidden>
   <h2>상품 추가</h2>
   <label class="photoPick">📷 상품 사진 선택<input id="photoInput" type="file" accept="image/*" hidden></label>
@@ -15,4 +15,10 @@
   </div>
   <textarea id="newMemo" placeholder="특징·메모"></textarea>
   <div class="formactions"><button id="cancelAdd">취소</button><button id="saveAdd" class="primary">상품 저장</button></div>
-</section><section id="content"></section></main><script src="app.js"></script></body></html>
+</section><section id="content"></section></main><script src="fox-version.js"></script><script>
+const androidVersion = window.FOX_ANDROID_VERSION;
+if (androidVersion) {
+  document.title = 'FOX Producer Android ' + androidVersion.versionName;
+  document.getElementById('appVersion').textContent = 'Android ' + androidVersion.versionName;
+}
+</script><script src="app.js"></script></body></html>

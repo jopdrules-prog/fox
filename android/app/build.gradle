@@ -1,15 +1,94 @@
 plugins { id 'com.android.application' }
 
+def foxVersion = new Properties()
+rootProject.file('version.properties').withInputStream { foxVersion.load(it) }
+def versionCodeText = foxVersion.getProperty('versionCode', '')
+def versionNameText = foxVersion.getProperty('versionName', '')
+if (!(versionCodeText ==~ /[1-9][0-9]{0,9}/) ||
+        versionCodeText.toLong() > 2100000000L ||
+        !(versionNameText ==~ /(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))?/)) {
+    throw new GradleException('Invalid android/version.properties: use a positive versionCode and numeric versionName (e.g. 1.1 or 1.1.1).')
+}
+
+// No embedded passwords, generated release keys, or debug signing fallback.
+def signingEnvironment = ['ANDROID_KEYSTORE_PATH', 'ANDROID_KEYSTORE_PASSWORD',
+                          'ANDROID_KEY_ALIAS', 'ANDROID_KEY_PASSWORD']
+def signingValues = signingEnvironment.collectEntries { [(it): System.getenv(it)] }
+def validateFoxReleaseSigning = tasks.register('validateFoxReleaseSigning') {
+    doLast {
+        def missing = signingEnvironment.findAll { !signingValues[it] }
+        if (!missing.isEmpty()) {
+            throw new GradleException('Release signing is required. Missing environment variables: ' + missing.join(', '))
+        }
+        if (!file(signingValues.ANDROID_KEYSTORE_PATH).isFile()) {
+            throw new GradleException('Release keystore file is missing. Restore it from GitHub Actions secrets.')
+        }
+    }
+}
+
 android {
     namespace 'com.fox.producer'
     compileSdk 35
+    buildToolsVersion '35.0.0'
 
     defaultConfig {
         applicationId 'com.fox.producer'
         minSdk 26
         targetSdk 35
-        versionCode 10
-        versionName '1.0'
+        versionCode versionCodeText.toInteger()
+        versionName versionNameText
+    }
+
+    signingConfigs {
+        release {
+            if (signingEnvironment.every { signingValues[it] }) {
+                storeFile file(signingValues.ANDROID_KEYSTORE_PATH)
+                storePassword signingValues.ANDROID_KEYSTORE_PASSWORD
+                keyAlias signingValues.ANDROID_KEY_ALIAS
+                keyPassword signingValues.ANDROID_KEY_PASSWORD
+            }
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            debuggable false
+            minifyEnabled false
+        }
+    }
+}
+
+// All release build entry points (including bundle/package) require signing.
+tasks.configureEach {
+    if (name == 'preReleaseBuild' || name == 'validateSigningRelease') {
+        dependsOn validateFoxReleaseSigning
+    }
+}
+
+abstract class GenerateFoxVersionAsset extends DefaultTask {
+    @Input abstract Property<String> getVersionNameValue()
+    @Input abstract Property<Integer> getVersionCodeValue()
+    @OutputDirectory abstract DirectoryProperty getOutputDirectory()
+
+    @TaskAction void generate() {
+        def output = outputDirectory.get().asFile
+        output.mkdirs()
+        def data = groovy.json.JsonOutput.toJson([
+            versionName: versionNameValue.get(), versionCode: versionCodeValue.get()
+        ])
+        new File(output, 'fox-version.js').setText('window.FOX_ANDROID_VERSION = ' + data + ';\n', 'UTF-8')
+    }
+}
+
+// Generate a version asset for every variant without modifying checked-in assets.
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        def generateVersion = tasks.register("generate${variant.name.capitalize()}FoxVersionAsset", GenerateFoxVersionAsset) {
+            versionNameValue.set(versionNameText)
+            versionCodeValue.set(versionCodeText.toInteger())
+            outputDirectory.set(layout.buildDirectory.dir("generated/foxVersion/${variant.name}"))
+        }
+        variant.sources.assets.addGeneratedSourceDirectory(generateVersion, { it.outputDirectory })
     }
 }
 

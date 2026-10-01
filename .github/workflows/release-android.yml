@@ -1,0 +1,95 @@
+name: Release FOX Producer Android
+
+# Run explicitly from main after updating android/version.properties.
+# Signing/publishing never runs on pull_request or ordinary pushes.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# All versions share the same queue so an older build cannot publish after a newer one.
+concurrency:
+  group: fox-producer-android-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Read the single version source
+        id: version
+        run: python3 android/scripts/release.py version >> "$GITHUB_OUTPUT"
+      - name: Validate required secrets and restore the fixed signing key
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_SIGNING_CERT_SHA256: ${{ secrets.ANDROID_SIGNING_CERT_SHA256 }}
+        run: python3 android/scripts/release.py prepare-signing "$RUNNER_TEMP/fox-release.jks"
+      - name: Reject reused versions, tags, and changed signing keys
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ANDROID_SIGNING_CERT_SHA256: ${{ secrets.ANDROID_SIGNING_CERT_SHA256 }}
+        run: python3 android/scripts/release.py check-remote
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d # v4
+        with:
+          gradle-version: '8.7'
+          cache-disabled: true
+      - name: Install pinned Android SDK packages
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"'
+      - name: Test release checks
+        run: python3 -m unittest discover -s android/scripts/tests -v
+      - name: Build signed release APK
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/fox-release.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: gradle --no-daemon --no-configuration-cache :app:assembleRelease
+      - name: Verify signature, app identity, versions, and release manifest
+        env:
+          ANDROID_SIGNING_CERT_SHA256: ${{ secrets.ANDROID_SIGNING_CERT_SHA256 }}
+        run: |
+          python3 android/scripts/release.py verify-apk \
+            android/app/build/outputs/apk/release/app-release.apk android/release-output
+      - name: Preserve verified public release files
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: FOX-Producer-release-${{ steps.version.outputs.version_name }}-${{ steps.version.outputs.version_code }}
+          path: |
+            android/release-output/*.apk
+            android/release-output/release-metadata.json
+            android/release-output/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload all assets to a draft, then publish the installable release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          VERSION_NAME: ${{ steps.version.outputs.version_name }}
+        run: |
+          gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "FOX Producer Android $VERSION_NAME" --draft \
+            --notes-file android/release-output/RELEASE_NOTES.md \
+            android/release-output/*.apk android/release-output/release-metadata.json android/release-output/SHA256SUMS
+          gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest
+          echo "### FOX Producer Android $VERSION_NAME" >> "$GITHUB_STEP_SUMMARY"
+          echo "[설치용 APK 받기](https://github.com/$GITHUB_REPOSITORY/releases/tag/$RELEASE_TAG)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Remove signing material even if the build or publishing failed
+        if: always()
+        run: rm -f "$RUNNER_TEMP/fox-release.jks"

@@ -1,0 +1,19 @@
+# Android build output and local SDK configuration
+/android/.gradle/
+/android/**/build/
+/android/local.properties
+/android/release-output/
+
+# Signing material must only live outside Git / in GitHub Actions secrets.
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+keystore.properties
+signing.properties
+*.keystore.base64
+*.jks.base64
+
+__pycache__/
+*.pyc
