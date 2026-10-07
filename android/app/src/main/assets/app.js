@@ -56,11 +56,21 @@ document.querySelectorAll('nav button').forEach(b=>b.addEventListener("click",()
 
 
 // v0.8 예산/수량/사입 합계
-function setQty(id,val){const p=productStore.find(x=>x.id===id);if(!p)return;p.qty=Math.max(0,parseInt(val)||0);localStorage.setItem("foxProducts",JSON.stringify(productStore));updateBudget()}
+// Apply the same minimum on reads without migrating existing stored products.
+function normalizeQty(val){return Math.max(1,parseInt(val,10)||1)}
+function setQty(id,val){
+  const p=productStore.find(x=>x.id===id);if(!p)return;
+  p.qty=normalizeQty(val);
+  localStorage.setItem("foxProducts",JSON.stringify(productStore));
+  updateBudget();
+  const summary=document.querySelector(".summary");
+  if(summary)summary.outerHTML=sourcingSummary();
+  return p.qty;
+}
 function setBudget(val){localStorage.setItem("foxBudget",String(n(val)));updateBudget()}
-function updateBudget(){const budget=n(localStorage.getItem("foxBudget")),items=selectedProducts();const total=items.reduce((a,p)=>a+n(p.krwCost)*(p.qty||1),0);const el=document.getElementById("budgetSummary");if(el)el.innerHTML=`<b>예상 사입 합계 ${total.toLocaleString()}원</b><span>${budget?"예산 "+budget.toLocaleString()+"원 · "+(budget-total>=0?"잔액 ":"초과 ")+Math.abs(budget-total).toLocaleString()+"원":"예산을 입력하면 초과 여부를 보여줘요."}</span>`;const inp=document.getElementById("budgetInput");if(inp&&!inp.value&&budget)inp.value=budget}
+function updateBudget(){const budget=n(localStorage.getItem("foxBudget")),items=selectedProducts();const total=items.reduce((a,p)=>a+n(p.krwCost)*normalizeQty(p.qty),0);const el=document.getElementById("budgetSummary");if(el)el.innerHTML=`<b>예상 사입 합계 ${total.toLocaleString()}원</b><span>${budget?"예산 "+budget.toLocaleString()+"원 · "+(budget-total>=0?"잔액 ":"초과 ")+Math.abs(budget-total).toLocaleString()+"원":"예산을 입력하면 초과 여부를 보여줘요."}</span>`;const inp=document.getElementById("budgetInput");if(inp&&!inp.value&&budget)inp.value=budget}
 function budgetBox(){return `<div class="budget"><input id="budgetInput" inputmode="numeric" placeholder="이번 사입 예산(원)" onchange="setBudget(this.value)"><div id="budgetSummary"></div></div>`}
-function qtyBox(p){return `<label class="qty">수량 <input inputmode="numeric" value="${p.qty||1}" min="1" onchange="setQty('${p.id}',this.value)"></label>`}
+function qtyBox(p){return `<label class="qty">수량 <input inputmode="numeric" value="${normalizeQty(p.qty)}" min="1" onchange="this.value=setQty('${p.id}',this.value)"></label>`}
 function showMySourcingV8(){const list=selectedProducts();content.innerHTML=budgetBox()+(list.length?list.map(p=>productCardV4(p).replace('<textarea',qtyBox(p)+'<textarea')).join(""):'<div class="note"><b>아직 선택한 실상품이 없습니다.</b></div>');updateBudget();productCounts()}
 document.querySelectorAll('nav button').forEach(b=>b.addEventListener("click",()=>{if(b.dataset.tab==="mine")setTimeout(showMySourcingV8,30)}));
 
@@ -69,7 +79,7 @@ document.querySelectorAll('nav button').forEach(b=>b.addEventListener("click",()
 function snapshot(){return {version:"0.9",savedAt:new Date().toISOString(),budget:localStorage.getItem("foxBudget")||"",products:productStore,memos:Object.fromEntries(productStore.map(p=>[p.id,getMemo(p.id)]))}}
 function downloadBackup(){const b=new Blob([JSON.stringify(snapshot(),null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="FOX_PRODUCER_BACKUP_"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(a.href)}
 function restoreBackup(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.products))throw 0;localStorage.setItem("foxProducts",JSON.stringify(d.products));if(d.budget)localStorage.setItem("foxBudget",d.budget);Object.entries(d.memos||{}).forEach(([k,v])=>localStorage.setItem("foxMemo:"+k,v));location.reload()}catch(e){alert("FOX 백업 파일을 확인해 주세요.")}};r.readAsText(file)}
-function sourcingSummary(){const b=productStore.filter(p=>p.status==="buy"),hold=productStore.filter(p=>p.status==="hold"),no=productStore.filter(p=>p.status==="no");const cost=b.reduce((a,p)=>a+n(p.krwCost)*(p.qty||1),0),sales=b.reduce((a,p)=>a+n(p.sellPrice)*(p.qty||1),0);return `<div class="summary"><b>FOX 사입 요약</b><div><span>사입 ${b.length}</span><span>보류 ${hold.length}</span><span>제외 ${no.length}</span></div><p>예상 원가 ${cost.toLocaleString()}원 · 예상 판매 ${sales.toLocaleString()}원</p></div>`}
+function sourcingSummary(){const b=productStore.filter(p=>p.status==="buy"),hold=productStore.filter(p=>p.status==="hold"),no=productStore.filter(p=>p.status==="no");const cost=b.reduce((a,p)=>a+n(p.krwCost)*normalizeQty(p.qty),0),sales=b.reduce((a,p)=>a+n(p.sellPrice)*normalizeQty(p.qty),0);return `<div class="summary"><b>FOX 사입 요약</b><div><span>사입 ${b.length}</span><span>보류 ${hold.length}</span><span>제외 ${no.length}</span></div><p>예상 원가 ${cost.toLocaleString()}원 · 예상 판매 ${sales.toLocaleString()}원</p></div>`}
 function showMySourcingV9(){const list=selectedProducts();content.innerHTML=sourcingSummary()+budgetBox()+`<div class="backupbar"><button onclick="downloadBackup()">백업 저장</button><label>백업 복원<input type="file" accept=".json,application/json" hidden onchange="restoreBackup(this.files[0])"></label></div>`+(list.length?list.map(p=>productCardV4(p).replace('<textarea',qtyBox(p)+'<textarea')).join(""):'<div class="note"><b>아직 선택한 실상품이 없습니다.</b></div>');updateBudget();productCounts()}
 document.querySelectorAll('nav button').forEach(b=>b.addEventListener("click",()=>{if(b.dataset.tab==="mine")setTimeout(showMySourcingV9,45)}));
 
@@ -108,7 +118,7 @@ document.getElementById("saveAdd")?.addEventListener("click",()=>{
   const p={id:"local-"+Date.now(),name,source:document.getElementById("newSource").value,
     color:document.getElementById("newColor").value.trim(),shop:document.getElementById("newShop").value.trim(),
     krwCost:document.getElementById("newCost").value.trim(),sellPrice:document.getElementById("newSell").value.trim(),
-    qty:Math.max(1,parseInt(document.getElementById("newQty").value)||1),size:document.getElementById("newSize").value.trim(),
+    qty:normalizeQty(document.getElementById("newQty").value),size:document.getElementById("newSize").value.trim(),
     reason:document.getElementById("newMemo").value.trim(),image:pendingPhoto,status:"hold",price:"",moq:""};
   try{productStore.unshift(p);localStorage.setItem("foxProducts",JSON.stringify(productStore))}
   catch(e){productStore.shift();alert("사진 저장 공간이 부족합니다. 사진을 줄여 다시 시도해 주세요.");return}
