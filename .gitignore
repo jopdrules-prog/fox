@@ -17,3 +17,5 @@ signing.properties
 
 __pycache__/
 *.pyc
+# Local JavaScript test dependencies
+/node_modules/

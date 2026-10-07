@@ -1,0 +1,37 @@
+name: Test FOX Producer quantities
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'app.js'
+      - 'index.html'
+      - 'android/app/src/main/assets/**'
+      - 'tests/**'
+      - 'package*.json'
+      - '.github/workflows/test-producer.yml'
+  pull_request:
+    paths:
+      - 'app.js'
+      - 'index.html'
+      - 'android/app/src/main/assets/**'
+      - 'tests/**'
+      - 'package*.json'
+      - '.github/workflows/test-producer.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  quantity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm test
